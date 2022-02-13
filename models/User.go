@@ -20,6 +20,9 @@ func (User) TableName() string {
 	return "user"
 }
 
+/**
+用户的增删改查，针对数据库的操作，与业务逻辑里的增删改查不一致
+*/
 func (user *User) saveUser() *gorm.DB {
 	db := configs.DB
 	err := db.Create(user)
@@ -31,8 +34,9 @@ func (user *User) saveUser() *gorm.DB {
 }
 
 func (user *User) delUser() *gorm.DB {
+	/**
+	 */
 	db := configs.DB
-	user.UserState = true
 	err := db.Delete(user)
 	if err != nil {
 		fmt.Println(err.Error)

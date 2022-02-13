@@ -8,7 +8,7 @@ var pb, pa []int
 var vis []int
 var dfn int
 
-func ScheduleCourseService(request entity.ScheduleCourseRequest) (response entity.ScheduleCourseResponse) {
+func ScheduleCourseService(request *entity.ScheduleCourseRequest) (response entity.ScheduleCourseResponse) {
 	Data := match(request.TeacherCourseRelationShip)
 	if Data != nil {
 		response = entity.ScheduleCourseResponse{Code: entity.OK, Data: Data}
@@ -19,6 +19,7 @@ func ScheduleCourseService(request entity.ScheduleCourseRequest) (response entit
 }
 
 func match(relationship map[string][]string) map[string]string {
+	//增广路算法进行匹配，由于图是老师到课程的，所以从每一个课程开始寻找增广路，扩展老师与课程的匹配关系
 	course := make(map[string]string)
 	cnt := 0
 	for v, _ := range relationship {
@@ -27,6 +28,7 @@ func match(relationship map[string][]string) map[string]string {
 		}
 	}
 	if cnt < len(relationship) {
+		//不是所有老师都匹配成功
 		return nil
 	}
 	schedule := make(map[string]string, 0)
