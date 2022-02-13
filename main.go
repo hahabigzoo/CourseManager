@@ -8,8 +8,7 @@ import (
 
 func main() {
 	configs.InitDB()
-	MysqlDb := configs.GetDB()
-	defer MysqlDb.Close()
+	configs.InitClient()
 	router := gin.Default()
 	routes.RegisterRouter(router)
 	router.Run(":80")

@@ -33,6 +33,6 @@ func RegisterRouter(r *gin.Engine) {
 	// 抢课
 	g.POST("/student/book_course")
 	g.GET("/student/course")
-	g.GET("/ping", controllers.Test)
+	g.GET("/ping", controllers.Pong)
 
 }

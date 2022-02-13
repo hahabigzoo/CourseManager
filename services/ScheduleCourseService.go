@@ -1,19 +1,19 @@
 package services
 
 import (
-	"Course/serializer"
+	"Course/entity"
 )
 
 var pb, pa []int
 var vis []int
 var dfn int
 
-func ScheduleCourseService(request serializer.ScheduleCourseRequest) (response serializer.ScheduleCourseResponse) {
+func ScheduleCourseService(request entity.ScheduleCourseRequest) (response entity.ScheduleCourseResponse) {
 	Data := match(request.TeacherCourseRelationShip)
 	if Data != nil {
-		response = serializer.ScheduleCourseResponse{Code: serializer.OK, Data: Data}
+		response = entity.ScheduleCourseResponse{Code: entity.OK, Data: Data}
 	} else {
-		response = serializer.ScheduleCourseResponse{Code: serializer.UnknownError, Data: Data}
+		response = entity.ScheduleCourseResponse{Code: entity.UnknownError, Data: Data}
 	}
 	return
 }

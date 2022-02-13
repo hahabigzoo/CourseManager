@@ -1,18 +1,17 @@
 package configs
 
 import (
-	"database/sql"
+	"context"
 	"fmt"
-	"strconv"
-	"time"
-
-	_ "github.com/go-sql-driver/mysql"
+	"github.com/go-redis/redis/v8"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var MysqlDb *sql.DB
-var MysqlDbErr error
+// 定义一个全局对象db
+var DB *gorm.DB
 
-func GetDbConfig() map[string]string {
+func GetDbConfig() string {
 	// 初始化数据库配置map
 	dbConfig := make(map[string]string)
 
@@ -27,14 +26,6 @@ func GetDbConfig() map[string]string {
 	dbConfig["DB_MAX_IDLE_CONNS"] = "10"       // 连接池最大空闲数
 	dbConfig["DB_MAX_LIFETIME_CONNS"] = "7200" // 连接池链接最长生命周期
 
-	return dbConfig
-}
-
-func InitDB() {
-	// get db config
-	// db err instance
-	dbConfig := GetDbConfig()
-
 	dbDSN := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=%s",
 		dbConfig["DB_USER"],
 		dbConfig["DB_PWD"],
@@ -44,32 +35,32 @@ func InitDB() {
 		dbConfig["DB_CHARSET"],
 	)
 
-	// connect and open db connection
-	MysqlDb, MysqlDbErr = sql.Open("mysql", dbDSN)
+	return dbDSN
+}
 
-	if MysqlDbErr != nil {
-		panic("database data source name error: " + MysqlDbErr.Error())
-	}
-
-	// max open connections
-	dbMaxOpenConns, _ := strconv.Atoi(dbConfig["DB_MAX_OPEN_CONNS"])
-	MysqlDb.SetMaxOpenConns(dbMaxOpenConns)
-
-	// max idle connections
-	dbMaxIdleConns, _ := strconv.Atoi(dbConfig["DB_MAX_IDLE_CONNS"])
-	MysqlDb.SetMaxIdleConns(dbMaxIdleConns)
-
-	// max lifetime of connection if <=0 will forever
-	dbMaxLifetimeConns, _ := strconv.Atoi(dbConfig["DB_MAX_LIFETIME_CONNS"])
-	MysqlDb.SetConnMaxLifetime(time.Duration(dbMaxLifetimeConns))
-
-	// check db connection at once avoid connect failed
-	// else error will be reported until db first sql operate
-	if MysqlDbErr = MysqlDb.Ping(); nil != MysqlDbErr {
-		panic("database connect failed: " + MysqlDbErr.Error())
+// 定义一个初始化数据库的函数
+func InitDB() {
+	dsn := GetDbConfig()
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	DB = db.Debug()
+	if err != nil {
+		panic(fmt.Sprintf("open mysql failed, err is %s", err))
 	}
 }
 
-func GetDB() *sql.DB {
-	return MysqlDb
+// 声明一个全局的rdb变量
+var Rdb *redis.Client
+
+// 初始化连接
+func InitClient() {
+	Rdb = redis.NewClient(&redis.Options{
+		Addr:     "180.184.74.86:6379",
+		Password: "", // no password set
+		DB:       0,  // use default DB
+	})
+
+	_, err := Rdb.Ping(context.Background()).Result()
+	if err != nil {
+		panic(fmt.Sprintf("open mysql failed, err is %s", err))
+	}
 }

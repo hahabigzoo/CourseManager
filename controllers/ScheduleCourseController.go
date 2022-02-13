@@ -1,15 +1,11 @@
 package controllers
 
 import (
-	"Course/serializer"
+	"Course/entity"
 	"Course/services"
 	"encoding/json"
 	"github.com/gin-gonic/gin"
 )
-
-func Pong(c *gin.Context) {
-	c.JSON(200, gin.H{"message": "pong"})
-}
 
 func ScheuleCoursecontroller(c *gin.Context) {
 	var teacherCourseRelationShip map[string][]string
@@ -18,7 +14,7 @@ func ScheuleCoursecontroller(c *gin.Context) {
 	if err != nil {
 		c.JSON(200, gin.H{"message": err})
 	}
-	req := serializer.ScheduleCourseRequest{TeacherCourseRelationShip: teacherCourseRelationShip}
+	req := entity.ScheduleCourseRequest{TeacherCourseRelationShip: teacherCourseRelationShip}
 	resp := services.ScheduleCourseService(req)
 	c.JSON(200, resp)
 }
