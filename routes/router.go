@@ -17,9 +17,9 @@ func RegisterRouter(r *gin.Engine) {
 
 	// 登录
 
-	g.POST("/auth/login")
-	g.POST("/auth/logout")
-	g.GET("/auth/whoami")
+	g.POST("/auth/login", controllers.Login)
+	g.POST("/auth/logout", controllers.Logout)
+	g.GET("/auth/whoami", controllers.Whoami)
 
 	// 排课
 	g.POST("/course/create", controllers.CreateCourse)
@@ -31,8 +31,8 @@ func RegisterRouter(r *gin.Engine) {
 	g.POST("/course/schedule", controllers.ScheuleCoursecontroller)
 
 	// 抢课
-	g.POST("/student/book_course")
-	g.GET("/student/course")
+	g.POST("/student/book_course", controllers.BookCourse)
+	g.GET("/student/course", controllers.Course)
 	g.GET("/ping", controllers.Pong)
 
 }
