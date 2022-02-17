@@ -27,8 +27,21 @@ func CreateUser(c *gin.Context) {
 
 	// 权限判断
 	// 判断当前用户是不是管理员，只有管理员才有创建用户的权限
-	// 通过登录模块实现的接口，g.GET("/auth/whoami")， 判断当前用户是不是管理员
-	// todo
+	// 读取session,获取当前登录用户的用户名
+	session := sessions.Default(c)
+	loginUserName := session.Get("username").(string)
+	if user, err := services.GetUserByUserName(loginUserName); err != nil {
+		response.Code = entity.UnknownError
+		c.JSON(http.StatusOK, response)
+		return
+	} else {
+		if entity.Admin != user.UserType {
+			// 当前用户不是管理员
+			response.Code = entity.PermDenied
+			c.JSON(http.StatusOK, response)
+			return
+		}
+	}
 
 	// 检测用户名是否已存在
 	if _, err := services.GetUserByUserName(request.Username); err == nil {
