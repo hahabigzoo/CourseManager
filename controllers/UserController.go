@@ -6,6 +6,7 @@ import (
 	"Course/services"
 	"Course/utils"
 	"errors"
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"net/http"
