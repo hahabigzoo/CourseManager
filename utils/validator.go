@@ -10,11 +10,11 @@ func CreateUserVerify(request entity.CreateMemberRequest) bool {
 	if len(request.Nickname) < 4 || len(request.Nickname) > 20 {
 		return false
 	}
-	for _, value := range request.Nickname {
-		if !(('a' <= value && value <= 'z') || ('A' <= value && value <= 'Z')) {
-			return false
-		}
-	}
+	//for _, value := range request.Nickname {
+	//	if !(('a' <= value && value <= 'z') || ('A' <= value && value <= 'Z')) {
+	//		return false
+	//	}
+	//}
 	// 用户名
 	if len(request.Username) < 8 || len(request.Username) > 20 {
 		return false
