@@ -4,13 +4,17 @@ import (
 	"Course/configs"
 	"Course/entity"
 	"Course/models"
+	"errors"
+	"fmt"
+	"gorm.io/gorm"
+	"strconv"
 )
 
 /*
 	User这个Model的增删改查操作都放在这里
 */
 
-func CreateUser(user models.User) (err error, userInter models.User){
+func CreateUser(user models.User) (err error, userInter models.User) {
 	err = configs.DB.Create(&user).Error
 	return err, user
 }
@@ -25,12 +29,22 @@ func GetUserByUserName(username string) (user models.User, err error) {
 	return
 }
 
+func GetUser(request entity.GetMemberRequest) (user models.User, err error) {
+	// 因为是软删除，还未过滤软删除的记录
+	// 直接使用数据库来筛选软删除
+
+	id_str := request.UserID
+	id, _ := strconv.ParseInt(id_str, 10, 64)
+	user, err = GetUserById(id)
+	return
+}
+
 func GetUserList(request entity.GetMemberListRequest) (userList []models.User, err error) {
 	// 因为是软删除，还未过滤软删除的记录
-	// todo
+	// 直接使用数据库来筛选软删除
 	limit := request.Limit
-	offset := request.Offset
-	err = configs.DB.Limit(limit).Offset(offset).Find(&userList).Error
+	offset := request.Offset * limit
+	err = configs.DB.Where(map[string]interface{}{"UserState": 0}).Offset(offset).Limit(limit).Find(&userList).Error
 	return
 }
 
@@ -48,6 +62,35 @@ func UpdateUserStateById(id int64) (err error) {
 	return
 }
 
-func DeleteUserById(id int64) (err error){
+func DeleteUserById(id int64) (err error) {
 	return UpdateUserStateById(id)
+}
+
+func DeleteUser(request entity.DeleteMemberRequest) (response entity.DeleteMemberResponse) {
+	id_str := request.UserID
+	id, err1 := strconv.ParseInt(id_str, 10, 64)
+	if err1 != nil {
+		response.Code = entity.ParamInvalid
+	}
+	user, err := GetUserById(id)
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		response.Code = entity.UserNotExisted
+		return
+	}
+	if err != nil {
+		response.Code = entity.UnknownError
+		fmt.Println(err)
+		return
+	}
+	if user.UserState == true {
+		response.Code = entity.UserHasDeleted
+		return
+	}
+	if err2 := DeleteUserById(id); err2 != nil {
+		response.Code = entity.UnknownError
+		fmt.Println(err)
+		return
+	}
+	response.Code = entity.OK
+	return
 }

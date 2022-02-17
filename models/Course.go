@@ -7,11 +7,11 @@ import (
 )
 
 type Course struct {
-	CourseID   int64  `gorm:"column:CourseID"`
+	CourseID   int64  `gorm:"primaryKey;column:CourseID"`
 	CourseName string `gorm:"column:CourseName"`
-	Capacity   int64  `gorm:"column:Cap"`
-	TeacherID  int64  `gorm:"column:TeacherID"`
-	RestCap    int64  `gorm:"column:RestCap"`
+	Capacity   int    `gorm:"column:Cap"`
+	TeacherID  string `gorm:"column:TeacherID"`
+	RestCap    int    `gorm:"column:RestCap"`
 }
 
 func (Course) TableName() string {

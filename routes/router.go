@@ -10,10 +10,10 @@ func RegisterRouter(r *gin.Engine) {
 
 	// 成员管理
 	g.POST("/member/create", controllers.CreateUser)
-	g.GET("/member")
-	g.GET("/member/list")
+	g.GET("/member", controllers.GetUser)
+	g.GET("/member/list", controllers.GetUserList)
 	g.POST("/member/update", controllers.UpdateUser)
-	g.POST("/member/delete")
+	g.POST("/member/delete", controllers.DeleteUser)
 
 	// 登录
 
@@ -22,12 +22,12 @@ func RegisterRouter(r *gin.Engine) {
 	g.GET("/auth/whoami")
 
 	// 排课
-	g.POST("/course/create")
-	g.GET("/course/get")
+	g.POST("/course/create", controllers.CreateCourse)
+	g.GET("/course/get", controllers.GetCourse)
 
-	g.POST("/teacher/bind_course")
-	g.POST("/teacher/unbind_course")
-	g.GET("/teacher/get_course")
+	g.POST("/teacher/bind_course", controllers.BindCourse)
+	g.POST("/teacher/unbind_course", controllers.UnbindCourse)
+	g.GET("/teacher/get_course", controllers.GetTeacherCourse)
 	g.POST("/course/schedule", controllers.ScheuleCoursecontroller)
 
 	// 抢课

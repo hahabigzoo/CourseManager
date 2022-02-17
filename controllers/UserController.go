@@ -5,7 +5,9 @@ import (
 	"Course/models"
 	"Course/services"
 	"Course/utils"
+	"errors"
 	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 )
@@ -45,20 +47,65 @@ func CreateUser(c *gin.Context) {
 		c.JSON(http.StatusOK, response)
 	} else {
 		response.Code = entity.OK
-		UserIDStr := strconv.FormatInt(memberReturn.UserID,10)
+		UserIDStr := strconv.FormatInt(memberReturn.UserID, 10)
 		response.Data = struct{ UserID string }{UserID: UserIDStr}
 		c.JSON(http.StatusOK, response)
 	}
 }
 
 // 获取单个成员
-func GetUser(c *gin.Context)  {
+func GetUser(c *gin.Context) {
+	var request entity.GetMemberRequest
+	var response entity.GetMemberResponse
 
+	_ = c.ShouldBind(&request)
+	memberReturn, err := services.GetUser(request)
+	//返回结果有四种，查询错误，用户不存在，用户已经删除，用户
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			response.Code = entity.UserNotExisted
+			c.JSON(http.StatusOK, response)
+		} else {
+			response.Code = entity.UnknownError
+			c.JSON(http.StatusOK, response)
+		}
+	} else {
+		if memberReturn.UserState == true {
+			response.Code = entity.UserHasDeleted
+			c.JSON(http.StatusOK, response)
+		} else {
+			response.Code = entity.OK
+			UserIDStr := strconv.FormatInt(memberReturn.UserID, 10)
+			response.Data = entity.TMember{
+				UserID:   UserIDStr,
+				Nickname: memberReturn.Nickname,
+				Username: memberReturn.UserName,
+				UserType: memberReturn.UserType,
+			}
+			c.JSON(http.StatusOK, response)
+		}
+
+	}
 }
 
 // 批量获取成员
 func GetUserList(c *gin.Context) {
-
+	var request entity.GetMemberListRequest
+	var response entity.GetMemberListResponse
+	_ = c.ShouldBind(&request)
+	memberReturn, _ := services.GetUserList(request)
+	members := make([]entity.TMember, 0)
+	for _, member := range memberReturn {
+		members = append(members, entity.TMember{
+			UserID:   strconv.FormatInt(member.UserID, 10),
+			Nickname: member.Nickname,
+			Username: member.UserName,
+			UserType: member.UserType,
+		})
+	}
+	response.Code = entity.OK
+	response.Data = struct{ MemberList []entity.TMember }{MemberList: members}
+	c.JSON(http.StatusOK, response)
 }
 
 // 更新成员, 只允许更新昵称
@@ -95,10 +142,10 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if err := services.UpdateUserNicknameById(UserID, request.Nickname);err != nil{
+	if err := services.UpdateUserNicknameById(UserID, request.Nickname); err != nil {
 		response.Code = entity.UnknownError
 		c.JSON(http.StatusOK, response)
-	}else{
+	} else {
 		response.Code = entity.OK
 		c.JSON(http.StatusOK, response)
 	}
@@ -106,5 +153,10 @@ func UpdateUser(c *gin.Context) {
 
 // 删除成员, 成员删除后，该成员不能够被登录且不应该不可见
 func DeleteUser(c *gin.Context) {
-
+	var request entity.DeleteMemberRequest
+	var response entity.DeleteMemberResponse
+	// 获取参数
+	_ = c.ShouldBind(&request)
+	response = services.DeleteUser(request)
+	c.JSON(http.StatusOK, response)
 }
